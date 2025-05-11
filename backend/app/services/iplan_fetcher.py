@@ -5,24 +5,14 @@ import geopandas as gpd
 from shapely.geometry import Polygon
 from geojson import Feature, FeatureCollection
 
+from backend.app.services.mavat_scraper import extract_main_fields_async
+
 
 class IplanFetcher:
     def __init__(self, polygon_gdf: gpd.GeoDataFrame):
         self.polygon = polygon_gdf
         self.bbox = self.polygon.total_bounds
         self.plans = []
-
-        self.key_mapping = {
-            'מגורים (יח"ד)': "res_units",
-            'מגורים (מ"ר)': "res_sqm",
-            'מסחר (מ"ר)': "com_sqm",
-            'תעסוקה (מ"ר)': "emp_sqm",
-            'מבני ציבור (מ"ר)': "pub_bld_sqm",
-            "חדרי מלון / תיירות (חדר)": "htl_rm_cnt",
-            'חדרי מלון / תיירות (מ"ר)': "htl_rm_sqm",
-            'דירות קטנות (יח"ד)': "sml_aprt",
-            'דירות להשכרה (יח"ד)': "rent_units",
-        }
 
     async def fetch_plans_by_bbox(self) -> dict:
         minx, miny, maxx, maxy = self.bbox
@@ -72,20 +62,8 @@ class IplanFetcher:
                 filtered.append(plan)
         return filtered
 
-    def normalize_keys(self, plan: dict) -> dict:
-        original = plan["attributes"]
-        normalized = {}
-
-        for k, v in original.items():
-            if k in self.key_mapping:
-                new_key = self.key_mapping[k]
-                normalized[new_key] = v
-            else:
-                # print(f"⚠️ מפתח לא ממופה: '{k}'")
-                normalized[k] = v  # אם אתה רוצה לשמור גם את השדה המקורי
-
-        plan["attributes"] = normalized
-        return plan
+    def extract_mavat_data(self, plan: dict) -> dict:
+        return extract_main_fields_async(plan)
 
     def build_geodataframe_feature_collection(
         self, plans: list[dict]
@@ -117,10 +95,12 @@ class IplanFetcher:
         raw = await self.fetch_plans_by_bbox()
         filtered = self.filter_plans_in_polygon(raw)
 
-        # 🧪 נריץ רק על 2 ראשונות לבדיקה
+        filtered_subset = filtered
 
-        # print(f"✅ Filtered + enriched plans: {len(enriched)}")
-        # print("🔍 All scraped keys:")
-        # for key in sorted(all_keys):
-        #     print("-", key)
-        return filtered
+        enriched = []
+
+        for plan in filtered_subset:
+            plan = await self.extract_mavat_data(plan)
+            enriched.append(plan)
+
+        return enriched

@@ -4,6 +4,7 @@ import shutil
 import geopandas as gpd
 from pathlib import Path
 
+
 from backend.app.services.iplan_fetcher import IplanFetcher
 
 router = APIRouter()
@@ -52,6 +53,5 @@ async def upload_polygon(file: UploadFile = File(...)):
     # העשרת תכניות
     fetcher = IplanFetcher(gdf)
     plans = await fetcher.run()
-    print(len(plans))
 
-    return
+    return plans
