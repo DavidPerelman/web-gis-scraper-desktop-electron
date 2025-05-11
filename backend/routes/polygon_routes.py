@@ -3,6 +3,9 @@ from fastapi.responses import JSONResponse
 import json
 from typing import Optional
 
+import requests
+
+from backend.app.services.iplan_fetcher import fetch_plans_by_bbox
 from backend.app.services.polygon_loader import upload_polygon
 
 router = APIRouter()
@@ -77,3 +80,21 @@ async def upload_polygon_route(
         return JSONResponse(
             status_code=500, content={"message": f"שגיאה בעיבוד הקובץ: {str(e)}"}
         )
+
+
+@router.get("/fetch-plans")
+async def get_plans(bbox: str):
+    # המרה של bbox מ־string ל־tuple
+    try:
+        bbox = tuple(map(float, bbox.split(",")))
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid bbox format. Expected format: minx,miny,maxx,maxy",
+        )
+
+    try:
+        plans = fetch_plans_by_bbox(bbox)
+        return plans
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching plans: {str(e)}")

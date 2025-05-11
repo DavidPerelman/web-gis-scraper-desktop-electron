@@ -6,3 +6,5 @@ shapely
 fiona
 aiofiles
 python-multipart
+requests
+pycurl
