@@ -5,9 +5,20 @@
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 
+label_to_key = {
+    'מגורים (יח"ד)': "residential_units",
+    'מגורים (מ"ר)': "residential_sqm",
+    'מסחר (מ"ר)': "commercial_sqm",
+    'תעסוקה (מ"ר)': "employment_sqm",
+    'מבני ציבור (מ"ר)': "public_bldg_sqm",
+    "חדרי מלון / תיירות (חדר)": "hotel_rooms",
+    'חדרי מלון / תיירות (מ"ר)': "hotel_sqm",
+    'סה"כ שטח בדונם': "total_area_dunam",
+    'דירות קטנות (יח"ד)': "small_residential_units",
+}
+
 
 async def extract_main_fields_async(plan: dict) -> dict:
-
     url = plan["attributes"].get("pl_url")
     if not url:
         return plan
@@ -75,17 +86,26 @@ async def extract_main_fields_async(plan: dict) -> dict:
                 )
 
                 for button in quant_data_div:
-                    label = button.get_text(strip=True)
+                    label_div = button.find("div", class_="uk-width-expand")
+                    label = label_div.get_text(strip=True) if label_div else ""
+
                     value_div = button.find_next(
                         "div", class_="uk-width-1-2 uk-text-left"
                     )
                     value = (
                         value_div.find("b").get_text(strip=True) if value_div else ""
                     )
+
                     unit_div = button.find_next("div", class_="uk-width-1-6")
                     unit = unit_div.get_text(strip=True) if unit_div else ""
 
                     quant_data.append({"label": label, "value": value, "unit": unit})
+
+                    key = label_to_key.get(label)
+                    if key:
+                        plan["attributes"][key] = value
+                    else:
+                        print(f"⚠️ שדה לא מזוהה: {label}")
 
                 plan["attributes"]["quant_data"] = quant_data
             except Exception as e:
