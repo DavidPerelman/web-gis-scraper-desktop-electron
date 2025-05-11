@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+pydantic
+geopandas
+shapely
+fiona
+aiofiles
+python-multipart
