@@ -9,3 +9,4 @@ python-multipart
 requests
 pycurl
 httpx
+playwright

@@ -5,6 +5,8 @@ import geopandas as gpd
 from shapely.geometry import Polygon
 from geojson import Feature, FeatureCollection
 
+from backend.app.services.mavat_scraper import extract_main_fields_async
+
 
 class IplanFetcher:
     def __init__(self, polygon_gdf: gpd.GeoDataFrame):
@@ -72,6 +74,9 @@ class IplanFetcher:
                 filtered.append(plan)
         return filtered
 
+    def extract_mavat_data(self, plan: dict) -> dict:
+        return extract_main_fields_async(plan)
+
     def normalize_keys(self, plan: dict) -> dict:
         original = plan["attributes"]
         normalized = {}
@@ -116,6 +121,14 @@ class IplanFetcher:
     async def run(self) -> list[dict]:
         raw = await self.fetch_plans_by_bbox()
         filtered = self.filter_plans_in_polygon(raw)
+
+        filtered_subset = filtered[:5]
+
+        enriched = []
+
+        for plan in filtered_subset:
+            plan = await self.extract_mavat_data(plan)
+            enriched.append(plan)
 
         # 🧪 נריץ רק על 2 ראשונות לבדיקה
 
