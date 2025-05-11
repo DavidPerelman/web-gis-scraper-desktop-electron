@@ -1,6 +1,5 @@
 from fastapi import FastAPI
-
-from backend.routes import polygon_routes
+from backend.app.api.routes import router
 
 
 app = FastAPI(
@@ -15,4 +14,4 @@ async def health_check():
     return {"status": "ok"}
 
 
-app.include_router(polygon_routes.router)
+app.include_router(router)

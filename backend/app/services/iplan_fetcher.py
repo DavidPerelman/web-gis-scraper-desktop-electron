@@ -1,39 +1,126 @@
-import json
-import requests
 import pycurl
+import json
 from io import BytesIO
+import geopandas as gpd
+from shapely.geometry import Polygon
+from geojson import Feature, FeatureCollection
 
 
-def fetch_plans_by_bbox(bbox: tuple) -> dict:
-    minx, miny, maxx, maxy = bbox
-    url = (
-        "https://ags.iplan.gov.il/arcgisiplan/rest/services/PlanningPublic/Xplan/MapServer/1/query"
-        "?f=json"
-        "&where=pl_area_dunam%20%3C%3D15"
-        "&returnGeometry=true"
-        f"&geometry=%7B%22xmin%22%3A{minx}%2C%22ymin%22%3A{miny}%2C%22xmax%22%3A{maxx}%2C%22ymax%22%3A{maxy}%2C%22spatialReference%22%3A%7B%22wkid%22%3A2039%7D%7D"
-        "&geometryType=esriGeometryEnvelope"
-        "&inSR=2039"
-        "&outFields=pl_number%2Cpl_name%2Cpl_url%2Cquantity_delta_120%2Cstation_desc%2Cplan_county_name"
-        "&orderByFields=pl_number"
-        "&outSR=2039"
-    )
+class IplanFetcher:
+    def __init__(self, polygon_gdf: gpd.GeoDataFrame):
+        self.polygon = polygon_gdf
+        self.bbox = self.polygon.total_bounds
+        self.plans = []
 
-    buffer = BytesIO()
-    c = pycurl.Curl()
-    c.setopt(c.URL, url)
-    c.setopt(c.WRITEDATA, buffer)
-    c.setopt(c.TIMEOUT, 20)
-    c.setopt(c.HTTP_VERSION, pycurl.CURL_HTTP_VERSION_1_1)
-    c.setopt(
-        c.HTTPHEADER,
-        [
-            "Accept: application/json",
-            "Content-Type: application/x-www-form-urlencoded",
-        ],
-    )
-    c.perform()
-    c.close()
+        self.key_mapping = {
+            'מגורים (יח"ד)': "res_units",
+            'מגורים (מ"ר)': "res_sqm",
+            'מסחר (מ"ר)': "com_sqm",
+            'תעסוקה (מ"ר)': "emp_sqm",
+            'מבני ציבור (מ"ר)': "pub_bld_sqm",
+            "חדרי מלון / תיירות (חדר)": "htl_rm_cnt",
+            'חדרי מלון / תיירות (מ"ר)': "htl_rm_sqm",
+            'דירות קטנות (יח"ד)': "sml_aprt",
+            'דירות להשכרה (יח"ד)': "rent_units",
+        }
 
-    response_body = buffer.getvalue().decode("utf-8")
-    return json.loads(response_body)
+    async def fetch_plans_by_bbox(self) -> dict:
+        minx, miny, maxx, maxy = self.bbox
+        url = (
+            "https://ags.iplan.gov.il/arcgisiplan/rest/services/PlanningPublic/Xplan/MapServer/1/query"
+            "?f=json"
+            "&where=pl_area_dunam%20%3C%3D15"
+            "&returnGeometry=true"
+            f"&geometry=%7B%22xmin%22%3A{minx}%2C%22ymin%22%3A{miny}%2C%22xmax%22%3A{maxx}%2C%22ymax%22%3A{maxy}%2C%22spatialReference%22%3A%7B%22wkid%22%3A2039%7D%7D"
+            "&geometryType=esriGeometryEnvelope"
+            "&inSR=2039"
+            "&outFields=pl_number%2Cpl_name%2Cpl_url%2Cquantity_delta_120%2Cstation_desc%2Cplan_county_name"
+            "&orderByFields=pl_number"
+            "&outSR=2039"
+        )
+
+        buffer = BytesIO()
+        c = pycurl.Curl()
+        c.setopt(c.URL, url)
+        c.setopt(c.WRITEDATA, buffer)
+        c.setopt(c.TIMEOUT, 20)
+        c.setopt(c.HTTP_VERSION, pycurl.CURL_HTTP_VERSION_1_1)
+        c.setopt(
+            c.HTTPHEADER,
+            [
+                "Accept: application/json",
+                "Content-Type: application/x-www-form-urlencoded",
+            ],
+        )
+        c.perform()
+        c.close()
+
+        response_body = buffer.getvalue().decode("utf-8")
+        return json.loads(response_body)
+
+    def filter_plans_in_polygon(self, raw_json: dict) -> list[dict]:
+        features = raw_json.get("features", [])
+        filtered = []
+
+        for plan in features:
+            geom_data = plan.get("geometry", {})
+            rings = geom_data.get("rings")
+            if not rings:
+                continue
+            polygon = Polygon(shell=rings[0], holes=rings[1:])
+            if self.polygon.unary_union.contains(polygon.centroid):
+                filtered.append(plan)
+        return filtered
+
+    def normalize_keys(self, plan: dict) -> dict:
+        original = plan["attributes"]
+        normalized = {}
+
+        for k, v in original.items():
+            if k in self.key_mapping:
+                new_key = self.key_mapping[k]
+                normalized[new_key] = v
+            else:
+                # print(f"⚠️ מפתח לא ממופה: '{k}'")
+                normalized[k] = v  # אם אתה רוצה לשמור גם את השדה המקורי
+
+        plan["attributes"] = normalized
+        return plan
+
+    def build_geodataframe_feature_collection(
+        self, plans: list[dict]
+    ) -> gpd.GeoDataFrame:
+        features = []
+
+        for plan in plans:
+            rings = plan.get("geometry", {}).get("rings", [])
+            if not rings:
+                continue
+            exterior = rings[0]
+            holes = rings[1:]
+
+            try:
+                polygon = Polygon(shell=exterior, holes=holes)
+                feature = Feature(geometry=polygon, properties=plan["attributes"])
+                features.append(feature)
+            except Exception as e:
+                # print(
+                #     f"⚠️ Failed to build polygon for {plan['attributes'].get('pl_number')}: {e}"
+                # )
+                continue
+
+        collection = FeatureCollection(features)
+        gdf = gpd.GeoDataFrame.from_features(collection, crs="EPSG:2039")
+        return gdf
+
+    async def run(self) -> list[dict]:
+        raw = await self.fetch_plans_by_bbox()
+        filtered = self.filter_plans_in_polygon(raw)
+
+        # 🧪 נריץ רק על 2 ראשונות לבדיקה
+
+        # print(f"✅ Filtered + enriched plans: {len(enriched)}")
+        # print("🔍 All scraped keys:")
+        # for key in sorted(all_keys):
+        #     print("-", key)
+        return filtered
