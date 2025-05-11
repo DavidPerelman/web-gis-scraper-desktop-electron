@@ -2,6 +2,7 @@
 שירות לגירוד נתונים כמותיים מדף תוכנית באתר מבא"ת (mavat.iplan.gov.il)
 """
 
+from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 
 
@@ -33,15 +34,40 @@ async def extract_main_fields_async(plan: dict) -> dict:
                     await btn_more.click()
                     await page.wait_for_timeout(1000)  # המתן לטעינת שדות נוספים
 
+                html = await page.content()
+
+                soup = BeautifulSoup(html, "html.parser")
+
                 try:
-                    area_row = page.locator(
-                        "div.sv4-headline", has_text='סה"כ שטח בדונם'
+                    headline_blocks = soup.find(
+                        "li",
+                        {
+                            "class": "sv4-icon-arrow uk-open uk-hide-arrow ng-star-inserted"
+                        },
                     )
-                    value = await area_row.locator("div.sv4-big").text_content()
-                    if value:
-                        plan["attributes"]["total_area_dunam"] = value.strip()
+                    headline_blocks_div = headline_blocks.find(
+                        "div",
+                        {"class": "uk-accordion-content uk-margin-remove"},
+                    )
+                    small_div = headline_blocks_div.find(
+                        "div",
+                        {"class": "uk-padding-small"},
+                    )
+                    dunam_div = small_div.find(
+                        "div",
+                        {"class": "uk-grid uk-grid-collapse sv4-headline"},
+                    )
+                    dunam_blocks_divs = dunam_div.find_all(
+                        "div",
+                        {"class": "uk-width-1-2"},
+                    )
+                    dunam_value_div = dunam_blocks_divs[1]
+
+                    plan["attributes"]["total_area_dunam"] = dunam_value_div.find(
+                        "div", {"class": "sv4-big"}
+                    ).get_text(strip=True)
                 except Exception as e:
-                    print('⚠️ לא הצלחנו לשלוף סה"כ שטח בדונם:', e)
+                    print('⚠️ BeautifulSoup: לא הצלחנו לשלוף סה"כ שטח בדונם:', e)
 
                 # גרידת כל הנתונים הכמותיים
                 quant_data = []
