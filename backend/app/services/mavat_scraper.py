@@ -2,7 +2,7 @@
 שירות לגירוד נתונים כמותיים מדף תוכנית באתר מבא"ת (mavat.iplan.gov.il)
 """
 
-from pyppeteer import launch
+from playwright.async_api import async_playwright
 
 
 async def extract_main_fields_async(plan: dict) -> dict:
@@ -10,17 +10,20 @@ async def extract_main_fields_async(plan: dict) -> dict:
     if not url:
         return plan
 
-    browser = await launch(
-        headless=False,
-        executablePath="C:\Program Files\Google\Chrome\Application\chrome.exe",
-        args=["--no-sandbox"],
-    )
-    page = await browser.newPage()
+    print("🔗 Trying to open:", url)
 
-    try:
-        await page.goto(url, timeout=60000)
-        # בשלב הבא נגרד את הנתונים מהעמוד
-    finally:
-        await browser.close()
+    from playwright.async_api import async_playwright
+
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True)
+        context = await browser.new_context()
+        page = await context.new_page()
+
+        try:
+            await page.goto(url, timeout=60000)
+            print("✅ Page loaded successfully.")
+        except Exception as e:
+            print("❌ Page.goto error:", e)
+            return plan
 
     return plan
