@@ -14,18 +14,6 @@ class IplanFetcher:
         self.bbox = self.polygon.total_bounds
         self.plans = []
 
-        self.key_mapping = {
-            'מגורים (יח"ד)': "res_units",
-            'מגורים (מ"ר)': "res_sqm",
-            'מסחר (מ"ר)': "com_sqm",
-            'תעסוקה (מ"ר)': "emp_sqm",
-            'מבני ציבור (מ"ר)': "pub_bld_sqm",
-            "חדרי מלון / תיירות (חדר)": "htl_rm_cnt",
-            'חדרי מלון / תיירות (מ"ר)': "htl_rm_sqm",
-            'דירות קטנות (יח"ד)': "sml_aprt",
-            'דירות להשכרה (יח"ד)': "rent_units",
-        }
-
     async def fetch_plans_by_bbox(self) -> dict:
         minx, miny, maxx, maxy = self.bbox
         url = (
@@ -77,21 +65,6 @@ class IplanFetcher:
     def extract_mavat_data(self, plan: dict) -> dict:
         return extract_main_fields_async(plan)
 
-    def normalize_keys(self, plan: dict) -> dict:
-        original = plan["attributes"]
-        normalized = {}
-
-        for k, v in original.items():
-            if k in self.key_mapping:
-                new_key = self.key_mapping[k]
-                normalized[new_key] = v
-            else:
-                # print(f"⚠️ מפתח לא ממופה: '{k}'")
-                normalized[k] = v  # אם אתה רוצה לשמור גם את השדה המקורי
-
-        plan["attributes"] = normalized
-        return plan
-
     def build_geodataframe_feature_collection(
         self, plans: list[dict]
     ) -> gpd.GeoDataFrame:
@@ -122,7 +95,7 @@ class IplanFetcher:
         raw = await self.fetch_plans_by_bbox()
         filtered = self.filter_plans_in_polygon(raw)
 
-        filtered_subset = filtered[:5]
+        filtered_subset = filtered
 
         enriched = []
 
@@ -130,12 +103,4 @@ class IplanFetcher:
             plan = await self.extract_mavat_data(plan)
             enriched.append(plan)
 
-        # print(enriched)
-
-        # 🧪 נריץ רק על 2 ראשונות לבדיקה
-
-        # print(f"✅ Filtered + enriched plans: {len(enriched)}")
-        # print("🔍 All scraped keys:")
-        # for key in sorted(all_keys):
-        #     print("-", key)
         return enriched

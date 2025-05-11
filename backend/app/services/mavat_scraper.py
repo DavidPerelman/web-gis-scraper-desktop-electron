@@ -15,6 +15,8 @@ label_to_key = {
     'חדרי מלון / תיירות (מ"ר)': "hotel_sqm",
     'סה"כ שטח בדונם': "total_area_dunam",
     'דירות קטנות (יח"ד)': "small_residential_units",
+    "ב - תחבורה - רק\"ל (מס' תחנות)": "lrt_station_count",
+    'ב - תחבורה - רק"ל (ק"מ)': "lrt_km",
 }
 
 
@@ -32,7 +34,7 @@ async def extract_main_fields_async(plan: dict) -> dict:
 
         try:
             await page.goto(url, timeout=60000)
-            await page.wait_for_selector("h1.plan-name", timeout=10000)
+            await page.wait_for_selector("h1.plan-name", timeout=8000)
 
             btn_more = page.locator("button[aria-label='נתונים נוספים']")
 
@@ -40,7 +42,7 @@ async def extract_main_fields_async(plan: dict) -> dict:
                 if await btn_more.count() > 0 and await btn_more.is_visible():
                     await btn_more.scroll_into_view_if_needed()
                     await btn_more.click()
-                    await page.wait_for_timeout(1000)  # המתן לטעינת שדות נוספים
+                    await page.wait_for_timeout(200)  # המתן לטעינת שדות נוספים
 
                 html = await page.content()
 
