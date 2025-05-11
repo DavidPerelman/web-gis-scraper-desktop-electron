@@ -130,10 +130,12 @@ class IplanFetcher:
             plan = await self.extract_mavat_data(plan)
             enriched.append(plan)
 
+        # print(enriched)
+
         # 🧪 נריץ רק על 2 ראשונות לבדיקה
 
         # print(f"✅ Filtered + enriched plans: {len(enriched)}")
         # print("🔍 All scraped keys:")
         # for key in sorted(all_keys):
         #     print("-", key)
-        return filtered
+        return enriched

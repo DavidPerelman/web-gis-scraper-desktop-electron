@@ -52,6 +52,5 @@ async def upload_polygon(file: UploadFile = File(...)):
     # העשרת תכניות
     fetcher = IplanFetcher(gdf)
     plans = await fetcher.run()
-    print(len(plans))
 
-    return
+    return plans
