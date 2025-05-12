@@ -3,16 +3,17 @@
   "version": "0.1.0",
   "main": "electron/main.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "start": "electron ."
+    "dev": "concurrently \"npm run dev-react\" \"npm run dev-electron\"",
+    "dev-react": "cd react && npm run dev",
+    "dev-electron": "electron electron/main.js"
   },
   "dependencies": {
     "react": "^18.0.0",
     "react-dom": "^18.0.0"
   },
   "devDependencies": {
-    "vite": "^4.0.0",
-    "electron": "^26.0.0"
+    "concurrently": "^9.1.2",
+    "electron": "^26.6.10",
+    "vite": "^4.0.0"
   }
 }
