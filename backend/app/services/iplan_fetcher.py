@@ -5,7 +5,9 @@ import geopandas as gpd
 from shapely.geometry import Polygon
 from geojson import Feature, FeatureCollection
 
-from backend.app.services.mavat_scraper import extract_main_fields_async
+from backend.app.services.mavat_scraper import (
+    extract_main_fields_sync,
+)
 
 
 class IplanFetcher:
@@ -63,7 +65,7 @@ class IplanFetcher:
         return filtered
 
     def extract_mavat_data(self, plan: dict) -> dict:
-        return extract_main_fields_async(plan)
+        return extract_main_fields_sync(plan)
 
     def build_geodataframe_feature_collection(
         self, plans: list[dict]
@@ -95,12 +97,12 @@ class IplanFetcher:
         raw = await self.fetch_plans_by_bbox()
         filtered = self.filter_plans_in_polygon(raw)
 
-        filtered_subset = filtered
+        filtered_subset = filtered[:5]
 
         enriched = []
 
         for plan in filtered_subset:
-            plan = await self.extract_mavat_data(plan)
+            plan = self.extract_mavat_data(plan)
             enriched.append(plan)
 
         return enriched

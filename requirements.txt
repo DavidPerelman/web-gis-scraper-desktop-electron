@@ -11,3 +11,5 @@ pycurl
 httpx
 playwright
 aiohttp
+splinter
+selenium
