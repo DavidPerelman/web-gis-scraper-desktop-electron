@@ -1,4 +1,4 @@
-from pathlib import Path
+import json
 import geopandas as gpd
 
 
@@ -16,4 +16,6 @@ def create_geojson_preview(gdf: gpd.GeoDataFrame) -> dict:
     dict
         מילון במבנה FeatureCollection (GeoJSON תקני)
     """
-    pass
+    geojson_str = gdf.to_json()
+    geojson_dict = json.loads(geojson_str)
+    return geojson_dict
