@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from backend.app.api import export_routes
 from backend.app.api.routes import router
 
 
@@ -15,3 +16,4 @@ async def health_check():
 
 
 app.include_router(router)
+app.include_router(export_routes.router)

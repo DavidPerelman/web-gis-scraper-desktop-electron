@@ -105,8 +105,6 @@ class IplanFetcher:
             plan = self.extract_mavat_data(plan)
             enriched.append(plan)
 
-        geodata = self.build_geodataframe_feature_collection(enriched)
-
-        print(geodata)
+        gdf = self.build_geodataframe_feature_collection(enriched)
 
         return enriched
