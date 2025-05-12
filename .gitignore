@@ -2,4 +2,4 @@ node_modules/
 __pycache__/
 .env
 .venv
-temp_uploads
+# temp_uploads
