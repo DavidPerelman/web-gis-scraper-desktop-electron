@@ -3,3 +3,4 @@ __pycache__/
 .env
 .venv
 temp_uploads
+frontend/release
