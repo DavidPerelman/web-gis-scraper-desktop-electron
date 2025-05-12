@@ -3,7 +3,7 @@ from shapely.geometry import Polygon
 from geojson import Feature, FeatureCollection
 
 
-def build_gdf_from_plans(self, plans: list[dict]) -> gpd.GeoDataFrame:
+def build_gdf_from_plans(plans: list[dict]) -> gpd.GeoDataFrame:
     features = []
 
     for plan in plans:
