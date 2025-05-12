@@ -10,26 +10,34 @@ const FitBounds = ({ data }) => {
     const geoJsonLayer = L.geoJSON(data);
     const bounds = geoJsonLayer.getBounds();
     if (bounds.isValid()) {
-      map.fitBounds(bounds);
+      map.fitBounds(bounds, { padding: [40, 40] }); // ← כאן מוסיפים padding
     }
   }, [data, map]);
 
   return null;
 };
 
-const onEachFeature = (feature, layer) => {
-  const { pl_number, pl_name, station_desc } = feature.properties || {};
-  const popupContent = `
+const PlansMap = ({ data, hoveredId, setSelectedId }) => {
+  const onEachFeature = (feature, layer) => {
+    const { pl_number, pl_name, station_desc } = feature.properties || {};
+
+    const popupContent = `
     <strong>${pl_number || "ללא מספר"}</strong><br/>
     ${pl_name || "ללא שם"}<br/>
     <em>${station_desc || ""}</em>
   `;
-  layer.bindPopup(popupContent);
-};
+    layer.bindPopup(popupContent);
 
-const PlansMap = ({ data, hoveredId }) => {
+    // 🆕 מאזין ללחיצה
+    layer.on("click", () => {
+      if (setSelectedId) {
+        setSelectedId(feature.id);
+      }
+    });
+  };
+
   return (
-    <div className="w-full max-w-screen-xl mx-auto h-[500px] rounded-xl overflow-hidden">
+    <div className="w-full max-w-screen-xl mx-auto h-[350px] rounded-xl overflow-hidden">
       <MapContainer
         center={[32.08, 34.78]}
         zoom={12}
