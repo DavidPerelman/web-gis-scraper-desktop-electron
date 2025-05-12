@@ -1,20 +1,56 @@
 {
-  "name": "gis-plan-extractor",
-  "version": "0.1.0",
+  "name": "react",
+  "private": true,
+  "version": "0.0.0",
   "main": "electron/main.js",
+  "type": "commonjs",
   "scripts": {
-    "dev": "concurrently \"npm run dev-react\" \"npm run dev-electron\"",
-    "dev-react": "cd react && npm run dev",
-    "dev-electron": "electron electron/main.js"
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "electron:dev": "electron electron/main.js",
+    "electron:build": "cd react && npm run build && cd .. && npx kill-port 8000 || true && npx electron-builder"
+  },
+  "build": {
+    "appId": "com.webgisscraper.desktop",
+    "productName": "GIS Plan Extractor",
+    "files": [
+      "electron/",
+      "react/dist/",
+      "!node_modules/*",
+      "!react/node_modules/*"
+    ],
+    "icon": "assets/icon.ico",
+    "directories": {
+      "buildResources": "assets",
+      "output": "release"
+    },
+    "win": {
+      "target": "nsis"
+    }
   },
   "dependencies": {
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "tailwindcss": "^4.1.6"
+    "@tailwindcss/vite": "^4.1.6",
+    "leaflet": "^1.9.4",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-leaflet": "^5.0.0"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2",
-    "electron": "^26.6.10",
-    "vite": "^4.0.0"
+    "@eslint/js": "^9.25.0",
+    "@tailwindcss/postcss": "^4.1.6",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@vitejs/plugin-react": "^4.4.1",
+    "autoprefixer": "^10.4.21",
+    "electron": "^36.2.0",
+    "electron-builder": "^26.0.12",
+    "eslint": "^9.25.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^16.0.0",
+    "postcss": "^8.5.3",
+    "vite": "^6.3.5"
   }
 }

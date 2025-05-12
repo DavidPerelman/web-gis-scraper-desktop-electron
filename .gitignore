@@ -4,3 +4,7 @@ __pycache__/
 .venv
 temp_uploads
 frontend/release
+/frontend/release/
+/frontend/react/dist/
+/frontend/node_modules/
+/frontend/react/node_modules/
