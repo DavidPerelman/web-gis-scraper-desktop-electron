@@ -59,8 +59,7 @@ def extract_main_fields_sync(plan: dict) -> dict:
         print("⚠️ כפתור 'נתונים נוספים' לא נמצא או לא ניתן ללחיצה")
 
     html = driver.page_source
-    with open("mavat_debug.html", "w", encoding="utf-8") as f:
-        f.write(html)
+
     soup = BeautifulSoup(html, "html.parser")
 
     quant_data_block = soup.find(
