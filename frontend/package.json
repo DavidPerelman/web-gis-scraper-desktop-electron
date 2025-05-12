@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react-dom": "^18.0.0",
+    "tailwindcss": "^4.1.6"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
