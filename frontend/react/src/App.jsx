@@ -7,6 +7,7 @@ import PolygonUploader from "./components/PolygonUploader";
 function App() {
   const [plansGeojson, setPlansGeojson] = useState(null);
   const [hoveredPlanId, setHoveredPlanId] = useState(null);
+  const [selectedPlanId, setSelectedPlanId] = useState(null);
 
   const handlePlansReady = async (plans) => {
     fetch("http://localhost:8000/export/preview", {
@@ -30,8 +31,18 @@ function App() {
       <PolygonUploader onPlansReady={handlePlansReady} />
       {plansGeojson && (
         <>
-          <PlansMap data={plansGeojson} hoveredId={hoveredPlanId} />
-          <PlansTable data={plansGeojson} setHoveredId={setHoveredPlanId} />
+          <PlansMap
+            data={plansGeojson}
+            hoveredId={hoveredPlanId}
+            selectedId={selectedPlanId}
+            setSelectedId={setSelectedPlanId}
+          />
+          <PlansTable
+            data={plansGeojson}
+            setHoveredId={setHoveredPlanId}
+            selectedId={selectedPlanId}
+            setSelectedId={setSelectedPlanId}
+          />
         </>
       )}
     </>
