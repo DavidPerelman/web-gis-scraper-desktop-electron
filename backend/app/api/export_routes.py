@@ -14,7 +14,9 @@ router = APIRouter()
 @router.post("/export/preview", summary="החזרת GeoJSON לתצוגה מקדימה")
 async def export_preview(plans: list[dict]) -> dict:
     gdf = build_gdf_from_plans(plans)
+    gdf = gdf.to_crs("EPSG:4326")
     geojson = create_geojson_preview(gdf)
+
     return geojson
 
 
