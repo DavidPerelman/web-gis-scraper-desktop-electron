@@ -5,4 +5,11 @@ export default {
     extend: {},
   },
   plugins: [],
+  safelist: [
+    "bg-blue-600",
+    "hover:bg-blue-700",
+    "cursor-pointer",
+    "bg-gray-300",
+    "cursor-not-allowed",
+  ],
 };

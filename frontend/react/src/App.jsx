@@ -4,7 +4,7 @@ import PolygonUploader from "./components/PolygonUploader";
 function App() {
   return (
     <>
-      <PolygonUploader />
+      <PolygonUploader key="upload" />
     </>
   );
 }

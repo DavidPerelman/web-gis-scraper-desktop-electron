@@ -6,8 +6,8 @@ const PolygonUploader = () => {
   const [errorMessage, setErrorMessage] = useState(null);
   const [downloadUrl, setDownloadUrl] = useState(null);
   const abortRef = useRef();
-
   const [serverResponse, setServerResponse] = useState("");
+  const [serverPlans, setServerPlans] = useState(null);
 
   const handleFileChange = (e) => {
     const uploaded = e.target.files?.[0] || null;
@@ -37,11 +37,8 @@ const PolygonUploader = () => {
       }
 
       const data = await response.json(); // אם השרת מחזיר JSON
+      setServerPlans(data);
       setServerResponse(JSON.stringify(data, null, 2));
-      const blob = new Blob([JSON.stringify(data)], {
-        type: "application/json",
-      });
-      setDownloadUrl(URL.createObjectURL(blob));
 
       setStatus("success");
     } catch (err) {
@@ -57,9 +54,47 @@ const PolygonUploader = () => {
     }
   };
 
+  const handleExportDownload = async () => {
+    if (!serverPlans) {
+      console.error("❌ אין תוכניות לשליחה");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:8000/export/download", {
+        method: "POST",
+        body: JSON.stringify(serverPlans),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      setDownloadUrl(url);
+      setStatus("success");
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "plans_export.zip";
+      a.click();
+    } catch (err) {
+      setStatus("error");
+      if (err instanceof DOMException && err.name === "AbortError") {
+        setErrorMessage("ההעלאה בוטלה");
+      } else {
+        setErrorMessage("אירעה שגיאה במהלך העלאת הקובץ");
+      }
+
+      // אפשרות: להחזיר ל־idle אוטומטית אחרי כמה שניות
+      setTimeout(() => setStatus("idle"), 3000);
+    }
+  };
+
   const handleCancel = () => {
     abortRef.current?.abort();
-    setStatus("idle");
     setFile(null);
   };
 
@@ -159,15 +194,12 @@ const PolygonUploader = () => {
         {status === "success" && (
           <div className="text-center text-green-600 space-y-2">
             <p>✅ הבקשה הסתיימה בהצלחה</p>
-            {downloadUrl && (
-              <a
-                href={downloadUrl}
-                download
-                className="inline-block px-4 py-2 bg-green-600 text-white rounded"
-              >
-                הורד קובץ
-              </a>
-            )}
+            <button
+              onClick={handleExportDownload}
+              className="inline-block px-4 py-2 bg-green-600 text-white rounded text-white rounded cursor-pointer"
+            >
+              הורד כ־Shapefile (ZIP)
+            </button>
           </div>
         )}
         {status === "error" && errorMessage && (
