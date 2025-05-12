@@ -17,7 +17,7 @@ const FitBounds = ({ data }) => {
   return null;
 };
 
-const PlansMap = ({ data, hoveredId, setSelectedId }) => {
+const PlansMap = ({ data, hoveredId, setSelectedId, selectedId }) => {
   const onEachFeature = (feature, layer) => {
     const { pl_number, pl_name, station_desc } = feature.properties || {};
 
@@ -51,7 +51,10 @@ const PlansMap = ({ data, hoveredId, setSelectedId }) => {
         <GeoJSON
           data={data}
           style={(feature) => ({
-            color: feature.id === hoveredId ? "#0033cc" : "#3388ff",
+            color:
+              feature.id === hoveredId || feature.id === selectedId
+                ? "#0033cc"
+                : "#3388ff",
             weight: feature.id === hoveredId ? 3 : 1,
             fillOpacity: 0.5,
           })}

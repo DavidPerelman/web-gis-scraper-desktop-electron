@@ -34,12 +34,14 @@ function App() {
           <PlansMap
             data={plansGeojson}
             hoveredId={hoveredPlanId}
+            selectedId={selectedPlanId}
             setSelectedId={setSelectedPlanId}
           />
           <PlansTable
             data={plansGeojson}
             setHoveredId={setHoveredPlanId}
             selectedId={selectedPlanId}
+            setSelectedId={setSelectedPlanId}
           />
         </>
       )}
