@@ -6,6 +6,7 @@ const PolygonUploader = () => {
   const [errorMessage, setErrorMessage] = useState(null);
   const [downloadUrl, setDownloadUrl] = useState(null);
   const abortRef = useRef();
+  // eslint-disable-next-line no-unused-vars
   const [serverResponse, setServerResponse] = useState("");
   const [serverPlans, setServerPlans] = useState(null);
 
@@ -206,12 +207,6 @@ const PolygonUploader = () => {
           <p className="text-red-600 text-center">❌ {errorMessage}</p>
         )}
       </div>
-
-      {serverResponse && (
-        <div className="whitespace-pre-wrap bg-gray-100 p-4 rounded-md mt-6 text-right font-mono text-sm">
-          {serverResponse}
-        </div>
-      )}
     </div>
   );
 };
