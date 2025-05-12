@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "electron:dev": "electron electron/main.js",
-    "electron:build": "cd react && npm run build && cd .. && electron-builder"
+    "electron:build": "cd react && npm run build && cd .. && npx kill-port 8000 || true && npx electron-builder"
   },
   "build": {
     "appId": "com.webgisscraper.desktop",
