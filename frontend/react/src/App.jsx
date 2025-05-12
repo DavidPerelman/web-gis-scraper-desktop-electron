@@ -1,14 +1,38 @@
+import { useState } from "react";
 import "./App.css";
 import PlansMap from "./components/PlansMap";
+import PlansTable from "./components/PlansTable";
 import PolygonUploader from "./components/PolygonUploader";
-import { exampleGeojson } from "./components/example.geojson";
 
 function App() {
+  const [plansGeojson, setPlansGeojson] = useState(null);
+
+  const handlePlansReady = async (plans) => {
+    fetch("http://localhost:8000/export/preview", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(plans), // נוודא שפה יש את הנתונים הנכונים
+    })
+      .then((res) => res.json())
+      .then((geojson) => {
+        if (!geojson.features || geojson.features.length === 0) {
+          console.error("❌ No valid features in the GeoJSON!");
+          return;
+        }
+        setPlansGeojson(geojson);
+      })
+      .catch((err) => console.error("❌ Error fetching GeoJSON:", err));
+  };
+
   return (
     <>
-      {/* <PolygonUploader key="upload" /> */}
-      <h1 className="text-xl font-bold mb-4">תצוגת תכניות לדוגמה</h1>
-      <PlansMap data={exampleGeojson} />
+      <PolygonUploader onPlansReady={handlePlansReady} />
+      {plansGeojson && (
+        <>
+          <PlansMap data={plansGeojson} />
+          <PlansTable data={plansGeojson} />
+        </>
+      )}
     </>
   );
 }

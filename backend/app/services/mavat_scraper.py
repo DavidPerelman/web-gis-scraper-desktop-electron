@@ -32,7 +32,7 @@ def extract_main_fields_sync(plan: dict) -> dict:
     if not url:
         return plan
 
-    print("🔗 Trying to open (Selenium):", url)
+    # print("🔗 Trying to open (Selenium):", url)
 
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument("--headless")

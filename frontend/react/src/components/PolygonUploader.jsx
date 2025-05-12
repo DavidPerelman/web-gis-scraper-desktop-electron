@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
-const PolygonUploader = () => {
+const PolygonUploader = ({ onPlansReady }) => {
   const [file, setFile] = useState(null);
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState(null);
@@ -40,6 +40,10 @@ const PolygonUploader = () => {
       const data = await response.json(); // אם השרת מחזיר JSON
       setServerPlans(data);
       setServerResponse(JSON.stringify(data, null, 2));
+
+      if (onPlansReady) {
+        onPlansReady(data); // ← מעביר את רשימת התוכניות ל־App
+      }
 
       setStatus("success");
     } catch (err) {

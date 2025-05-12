@@ -29,7 +29,7 @@ const onEachFeature = (feature, layer) => {
 
 const PlansMap = ({ data }) => {
   return (
-    <div className="h-[500px] w-full rounded-xl overflow-hidden">
+    <div className="w-full max-w-screen-xl mx-auto h-[500px] rounded-xl overflow-hidden">
       <MapContainer
         center={[32.08, 34.78]}
         zoom={12}
