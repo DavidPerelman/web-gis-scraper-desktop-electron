@@ -152,21 +152,32 @@ const PolygonUploader = ({ onPlansReady }) => {
           </div>
         </div>
 
-        <label
-          htmlFor="file"
-          className="block w-full border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 transition"
+        <div
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            const droppedFile = e.dataTransfer.files?.[0];
+            if (droppedFile) {
+              setFile(droppedFile);
+            }
+          }}
         >
-          <p className="text-gray-600 mb-2">
-            {file ? `✔️ ${file.name}` : "גרור קובץ לכאן או לחץ לבחירה"}
-          </p>
-          <input
-            id="file"
-            type="file"
-            accept=".zip"
-            onChange={handleFileChange}
-            className="hidden"
-          />
-        </label>
+          <label
+            htmlFor="file"
+            className="block w-full border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 transition"
+          >
+            <p className="text-gray-600 mb-2">
+              {file ? `✔️ ${file.name}` : "גרור קובץ לכאן או לחץ לבחירה"}
+            </p>
+            <input
+              id="file"
+              type="file"
+              accept=".zip"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+          </label>
+        </div>
 
         <div className="text-center">
           {status === "idle" && (

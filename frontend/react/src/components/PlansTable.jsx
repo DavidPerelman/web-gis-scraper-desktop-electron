@@ -27,9 +27,9 @@ const PlansTable = ({ data, setHoveredId, selectedId, setSelectedId }) => {
   };
 
   return (
-    <div className="w-full overflow-x-auto mt-6">
-      <div className="min-w-[1000px] mx-auto">
-        <table className="w-full border border-gray-300 text-sm text-right rtl">
+    <div className="w-full max-w-screen-xl mx-auto mt-6">
+      <div className="overflow-y-auto max-h-[45vh] border border-gray-300 rounded">
+        <table className="min-w-max w-full text-sm text-right rtl">
           <thead className="bg-gray-200">
             <tr>
               {Object.keys(headers).map((label) => (
