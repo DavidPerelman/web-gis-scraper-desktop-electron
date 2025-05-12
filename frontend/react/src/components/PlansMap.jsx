@@ -27,7 +27,7 @@ const onEachFeature = (feature, layer) => {
   layer.bindPopup(popupContent);
 };
 
-const PlansMap = ({ data }) => {
+const PlansMap = ({ data, hoveredId }) => {
   return (
     <div className="w-full max-w-screen-xl mx-auto h-[500px] rounded-xl overflow-hidden">
       <MapContainer
@@ -40,7 +40,15 @@ const PlansMap = ({ data }) => {
           attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <GeoJSON data={data} onEachFeature={onEachFeature} />
+        <GeoJSON
+          data={data}
+          style={(feature) => ({
+            color: feature.id === hoveredId ? "#0033cc" : "#3388ff",
+            weight: feature.id === hoveredId ? 3 : 1,
+            fillOpacity: 0.5,
+          })}
+          onEachFeature={onEachFeature}
+        />
         <FitBounds data={data} />
       </MapContainer>
     </div>

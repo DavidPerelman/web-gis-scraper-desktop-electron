@@ -20,7 +20,7 @@ const generalFields = {
   "קישור לתכנית": "pl_url",
 };
 
-const PlansTable = ({ data }) => {
+const PlansTable = ({ data, setHoveredId }) => {
   const headers = {
     ...generalFields,
     ...labelToKey,
@@ -44,7 +44,12 @@ const PlansTable = ({ data }) => {
           </thead>
           <tbody>
             {data.features.map((feature, idx) => (
-              <tr key={idx} className="border-t">
+              <tr
+                key={idx}
+                onMouseEnter={() => setHoveredId(feature.id)}
+                onMouseLeave={() => setHoveredId(null)}
+                className="border-t cursor-pointer"
+              >
                 {Object.values(headers).map((key) => (
                   <td key={key} className="p-2 border text-center">
                     {key === "pl_url" && feature.properties[key] ? (
