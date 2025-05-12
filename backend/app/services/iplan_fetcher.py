@@ -102,7 +102,7 @@ class IplanFetcher:
         enriched = []
 
         for plan in filtered_subset:
-            # plan = self.extract_mavat_data(plan)
+            plan = self.extract_mavat_data(plan)
             enriched.append(plan)
 
         gdf = self.build_geodataframe_feature_collection(enriched)
