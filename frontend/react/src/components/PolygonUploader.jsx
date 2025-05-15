@@ -1,14 +1,17 @@
 import { useState, useEffect, useRef } from "react";
+import logo from "../../assets/logo.svg";
 
-const PolygonUploader = ({ onPlansReady }) => {
+const PolygonUploader = ({ onPlansReady, plansGeojson, setPlansGeojson }) => {
   const [file, setFile] = useState(null);
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState(null);
   const [downloadUrl, setDownloadUrl] = useState(null);
   const abortRef = useRef();
+  const fileInputRef = useRef(null);
   // eslint-disable-next-line no-unused-vars
   const [serverResponse, setServerResponse] = useState("");
   const [serverPlans, setServerPlans] = useState(null);
+  const [inputKey, setInputKey] = useState(0);
 
   const handleFileChange = (e) => {
     const uploaded = e.target.files?.[0] || null;
@@ -61,7 +64,7 @@ const PolygonUploader = ({ onPlansReady }) => {
 
   const handleExportDownload = async () => {
     if (!serverPlans) {
-      console.error("❌ אין תוכניות לשליחה");
+      console.error("No plans!");
       return;
     }
 
@@ -77,14 +80,24 @@ const PolygonUploader = ({ onPlansReady }) => {
       }
 
       const blob = await response.blob();
+      const contentDisposition = response.headers.get("content-disposition");
+      let filename = "plans_export.zip";
+
+      if (contentDisposition && contentDisposition.includes("filename=")) {
+        filename = contentDisposition
+          .split("filename=")[1]
+          .replaceAll('"', "")
+          .trim();
+      }
+
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setStatus("success");
 
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "plans_export.zip";
-      a.click();
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.click();
     } catch (err) {
       setStatus("error");
       if (err instanceof DOMException && err.name === "AbortError") {
@@ -114,42 +127,42 @@ const PolygonUploader = ({ onPlansReady }) => {
   return (
     <div className="max-w-xl mx-auto space-y-6 p-4">
       <div className="space-y-4">
-        <h1 className="text-3xl font-bold text-gray-800 text-center">
-          GIS Scraper
-        </h1>
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <img
+            src={logo}
+            alt="Logo"
+            className="h-10 w-10 object-contain relative -translate-y-[-5px]"
+          />
+          <h1 className="text-3xl font-bold text-gray-800">GIS Scraper</h1>
+        </div>
         <p className="text-gray-600">
-          אפליקצייה לחילוץ נתוני תוכניות בנייה מאתר &quot;מנהל התכנון&quot;.
-          ניתן להעלות קובץ פוליגון, ולקבל תוצאה מעובדת: שכבת פוליגונים הכוללת את
+          תוכנה לחילוץ נתוני תוכניות בנייה מאתר &quot;מנהל התכנון&quot;. ניתן
+          להעלות קובץ פוליגון, ולקבל תוצאה מעובדת: שכבת פוליגונים הכוללת את
           התכניות שבתחום הפוליגון שהועלה, עם נתוני בנייה מורחבים עבור כל תכנית.
         </p>
         <p className="text-gray-600">
           בחר קובץ ← לחץ על &quot;שלח&quot; ← המתן לתשובה ← הורד את הקובץ המעובד
         </p>
-        <p className="text-gray-600">
-          <span className="text-blue-600 text-lg">ℹ️</span>
-          שימו לב: ככל שהפוליגון גדול יותר כך התהליך ייקח יותר זמן...
-        </p>
 
-        <div className="flex items-start gap-2 text-sm text-gray-700 border border-blue-200 bg-blue-50 p-3 rounded">
-          <span className="text-blue-600 text-lg">ℹ️</span>
-          <div>
-            <p>
-              סוג קובץ נתמך: <strong>ZIP</strong> בלבד, המכיל שכבת SHP. חובה
-              לכלול את הקבצים הבאים:
-            </p>
-            <ul className="list-disc list-inside">
-              <li>
-                <strong>.shp</strong> – נתוני הגיאומטריה
-              </li>
-              <li>
-                <strong>.shx</strong> – אינדקס
-              </li>
-              <li>
-                <strong>.dbf</strong> – טבלת המאפיינים
-              </li>
-            </ul>
-            <p className="mt-1">העלאה של קובץ חסר תגרום לשגיאה.</p>
-          </div>
+        <div className="bg-blue-50 border border-blue-300 text-blue-900 rounded-lg p-4 text-right rtl space-y-2 text-sm">
+          <ol className="list-decimal pr-4 space-y-2">
+            <li>
+              סוג קובץ נתמך: יש להעלות קובץ ZIP המכיל קובץ SHP, שכולל את הקבצים
+              הבאים:
+              <ul className="list-disc pr-4 mt-1 space-y-1">
+                <li>
+                  <code>.shp</code> – גיאומטריה
+                </li>
+                <li>
+                  <code>.shx</code> – אינדקס
+                </li>
+                <li>
+                  <code>.dbf</code> – מאפיינים
+                </li>
+              </ul>
+            </li>
+            <li>ככל שהפוליגון גדול יותר, כך התהליך עשוי להימשך זמן רב יותר.</li>
+          </ol>
         </div>
 
         <div
@@ -170,9 +183,11 @@ const PolygonUploader = ({ onPlansReady }) => {
               {file ? `✔️ ${file.name}` : "גרור קובץ לכאן או לחץ לבחירה"}
             </p>
             <input
+              key={inputKey}
               id="file"
               type="file"
               accept=".zip"
+              ref={fileInputRef}
               onChange={handleFileChange}
               className="hidden"
             />
@@ -218,6 +233,30 @@ const PolygonUploader = ({ onPlansReady }) => {
             </button>
           </div>
         )}
+
+        {serverPlans && plansGeojson && (
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => {
+                setFile(null);
+                setStatus("idle");
+                setErrorMessage(null);
+                setDownloadUrl(null);
+                setServerResponse("");
+                setServerPlans(null);
+                setPlansGeojson(null);
+                fileInputRef.current.value = null;
+                abortRef.current = null;
+                setInputKey((prev) => prev + 1);
+                window.scrollTo({ top: 0, behavior: "smooth" }); // גלילה למעלה
+              }}
+              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded transition cursor-pointer"
+            >
+              איפוס והעלאת קובץ חדש
+            </button>
+          </div>
+        )}
+
         {status === "error" && errorMessage && (
           <p className="text-red-600 text-center">❌ {errorMessage}</p>
         )}

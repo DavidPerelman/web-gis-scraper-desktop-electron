@@ -84,7 +84,7 @@ class IplanFetcher:
                 feature = Feature(geometry=polygon, properties=plan["attributes"])
                 features.append(feature)
             except Exception as e:
-                # print(
+                # log_warning(
                 #     f"⚠️ Failed to build polygon for {plan['attributes'].get('pl_number')}: {e}"
                 # )
                 continue

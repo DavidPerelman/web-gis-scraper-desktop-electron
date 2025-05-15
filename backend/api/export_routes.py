@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from fastapi import APIRouter, BackgroundTasks
+from utils.logger import log_warning
 from utils.gis_utils import build_gdf_from_plans
 from services.export_service import (
     create_geojson_preview,
@@ -30,10 +31,10 @@ async def export_download(plans: list[dict], background_tasks: BackgroundTasks):
             os.remove(path)
             # נוכל למחוק גם את התיקייה אם רוצים: os.rmdir(path.parent)
         except Exception as e:
-            print(f"⚠️ Failed to delete temp file: {e}")
+            log_warning(f"⚠️ Failed to delete temp file: {e}")
 
     background_tasks.add_task(cleanup_file, zip_path)
 
     return FileResponse(
-        path=zip_path, media_type="application/zip", filename="plans_export.zip"
+        path=zip_path, media_type="application/zip", filename=zip_path.name
     )

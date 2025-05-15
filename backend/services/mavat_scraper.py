@@ -7,7 +7,14 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import (
+    TimeoutException,
+    NoSuchElementException,
+    ElementNotInteractableException,
+)
 from bs4 import BeautifulSoup
+
+from utils.logger import log_info, log_warning
 
 label_to_key = {
     'מגורים (יח"ד)': "residential_units",
@@ -29,8 +36,6 @@ def extract_main_fields_sync(plan: dict) -> dict:
     if not url:
         return plan
 
-    # print("🔗 Trying to open (Selenium):", url)
-
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
@@ -44,16 +49,18 @@ def extract_main_fields_sync(plan: dict) -> dict:
     )
 
     try:
-        more_button = driver.find_element(
-            By.CSS_SELECTOR, "button[aria-label='נתונים נוספים']"
-        )
-        if more_button.is_displayed():
+        wait = WebDriverWait(driver, 10)
+        more_button = wait.until(EC.presence_of_element_located(
+            (By.CSS_SELECTOR, "button[aria-label='נתונים נוספים']")
+        ))
+
+        if more_button.is_displayed() and more_button.is_enabled():
             more_button.click()
             time.sleep(1)  # זמן קצר לטעינה
         else:
-            print("ℹ️ הכפתור 'נתונים נוספים' לא גלוי – נמשיך בלי ללחוץ")
-    except:  # noqa: E722
-        print("⚠️ כפתור 'נתונים נוספים' לא נמצא או לא ניתן ללחיצה")
+            log_info("ℹ️ 'More Data' button is not visible or not enabled – skipping click.")
+    except (TimeoutException, NoSuchElementException, ElementNotInteractableException):
+        log_warning("⚠️ 'More Data' button not found or not clickable.")
 
     html = driver.page_source
 
@@ -89,7 +96,7 @@ def extract_main_fields_sync(plan: dict) -> dict:
             "div", {"class": "sv4-big"}
         ).get_text(strip=True)
     except Exception as e:
-        print('⚠️ BeautifulSoup: לא הצלחנו לשלוף סה"כ שטח בדונם:', e)
+        log_warning("⚠️ BeautifulSoup: Failed to extract total area in dunams:", e)
 
     quant_data = []
 
@@ -114,7 +121,7 @@ def extract_main_fields_sync(plan: dict) -> dict:
         if key:
             plan["attributes"][key] = value
         else:
-            print(f"⚠️ שדה לא מזוהה: {label}")
+            log_warning(f"⚠️ Unrecognized field label: {label}")
 
     plan["attributes"]["quant_data"] = quant_data
 

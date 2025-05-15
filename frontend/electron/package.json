@@ -1,0 +1,44 @@
+{
+  "name": "electron",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "electron": "^36.2.0"
+  },
+  "build": {
+    "appId": "com.yourapp.fastapi",
+    "productName": "MyFullstackApp",
+    "directories": {
+      "buildResources": "assets",
+      "output": "dist"
+    },
+    "files": [
+      "electron/**",
+      {
+        "from": "react/dist",
+        "to": "react/dist",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "extraResources": [
+      {
+        "from": "electron/extra/run_server",
+        "to": "extra/run_server"
+      }
+    ],
+    "asar": false,
+    "win": {
+      "target": "nsis"
+    }
+  }
+}

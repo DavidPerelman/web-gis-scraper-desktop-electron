@@ -13,3 +13,8 @@ playwright
 aiohttp
 splinter
 selenium
+pyinstaller
+geojson
+bs4
+pyproj
+uuid

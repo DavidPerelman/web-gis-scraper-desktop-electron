@@ -1,56 +1,48 @@
 {
-  "name": "react",
-  "private": true,
-  "version": "0.0.0",
+  "name": "web-gis-scraper-desktop-electron",
+  "version": "1.0.0",
   "main": "electron/main.js",
-  "type": "commonjs",
+  "description": "GIS Scraper",
+  "author": "David Perelman",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "electron:dev": "electron electron/main.js",
-    "electron:build": "cd react && npm run build && cd .. && npx kill-port 8000 || true && npx electron-builder"
+    "electron:dev": "electron .",
+    "electron:build": "electron-builder",
+    "postinstall": "electron-builder install-app-deps"
   },
   "build": {
-    "appId": "com.webgisscraper.desktop",
-    "productName": "GIS Plan Extractor",
-    "files": [
-      "electron/",
-      "react/dist/",
-      "!node_modules/*",
-      "!react/node_modules/*"
-    ],
-    "icon": "assets/icon.ico",
+    "appId": "com.yourname.gis.scraper",
+    "productName": "GIS Scraper",
     "directories": {
       "buildResources": "assets",
-      "output": "release"
+      "output": "dist"
     },
+    "files": [
+      "electron/**",
+      "!electron/node_modules/**/*",
+      "!**/tests/**",
+      "!**/*.md",
+      {
+        "from": "react/dist",
+        "to": "react/dist",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "extraResources": [
+      {
+        "from": "electron/extra/run_server",
+        "to": "extra/run_server"
+      }
+    ],
+    "asar": false,
     "win": {
-      "target": "nsis"
+      "icon": "electron/assets/logo.ico",
+      "target": "portable"
     }
   },
-  "dependencies": {
-    "@tailwindcss/vite": "^4.1.6",
-    "leaflet": "^1.9.4",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-leaflet": "^5.0.0"
-  },
   "devDependencies": {
-    "@eslint/js": "^9.25.0",
-    "@tailwindcss/postcss": "^4.1.6",
-    "@types/react": "^19.1.2",
-    "@types/react-dom": "^19.1.2",
-    "@vitejs/plugin-react": "^4.4.1",
-    "autoprefixer": "^10.4.21",
-    "electron": "^36.2.0",
-    "electron-builder": "^26.0.12",
-    "eslint": "^9.25.0",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.19",
-    "globals": "^16.0.0",
-    "postcss": "^8.5.3",
-    "vite": "^6.3.5"
+    "electron": "^28.2.0",
+    "electron-builder": "^26.0.12"
   }
 }
