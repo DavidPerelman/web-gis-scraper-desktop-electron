@@ -37,7 +37,7 @@ const PlansMap = ({ data, hoveredId, setSelectedId, selectedId }) => {
   };
 
   return (
-    <div className="w-full max-w-screen-xl mx-auto h-[350px] rounded-xl overflow-hidden">
+    <div className="w-full max-w-screen-xl mx-auto h-[60vh] rounded-xl overflow-hidden">
       <MapContainer
         center={[32.08, 34.78]}
         zoom={12}

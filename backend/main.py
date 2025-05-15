@@ -1,10 +1,20 @@
+import os
+import sys
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from api import export_routes
 from api.routes import router
-from fastapi.middleware.cors import CORSMiddleware
 
+app_dir = getattr(sys, '_MEIPASS', os.path.abspath("."))
+os.environ["PATH"] = os.pathsep.join([
+    os.environ.get("PATH", ""),
+    os.path.join(app_dir, "fiona.libs"),
+    os.path.join(app_dir, "fiona"),
+    os.path.join(app_dir, "gdal"),  # אם קיים
+    os.path.join(app_dir, "Shapely.libs"),
+])
 
 app = FastAPI(
     title="GIS Scraper API",

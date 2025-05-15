@@ -28,7 +28,7 @@ const PlansTable = ({ data, setHoveredId, selectedId, setSelectedId }) => {
 
   return (
     <div className="w-full max-w-screen-xl mx-auto mt-6">
-      <div className="overflow-y-auto max-h-[45vh] border border-gray-300 rounded">
+      <div className="overflow-y-auto max-h-[60vh] border border-gray-300 rounded">
         <table className="min-w-max w-full text-sm text-right rtl">
           <thead className="bg-gray-200">
             <tr>

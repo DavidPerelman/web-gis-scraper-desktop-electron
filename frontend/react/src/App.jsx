@@ -18,17 +18,21 @@ function App() {
       .then((res) => res.json())
       .then((geojson) => {
         if (!geojson.features || geojson.features.length === 0) {
-          console.error("❌ No valid features in the GeoJSON!");
+          console.error("No valid features in the GeoJSON!");
           return;
         }
         setPlansGeojson(geojson);
       })
-      .catch((err) => console.error("❌ Error fetching GeoJSON:", err));
+      .catch((err) => console.error("Error fetching GeoJSON:", err));
   };
 
   return (
     <>
-      <PolygonUploader onPlansReady={handlePlansReady} />
+      <PolygonUploader
+        plansGeojson={plansGeojson}
+        setPlansGeojson={setPlansGeojson}
+        onPlansReady={handlePlansReady}
+      />
       {plansGeojson && (
         <>
           <PlansMap
