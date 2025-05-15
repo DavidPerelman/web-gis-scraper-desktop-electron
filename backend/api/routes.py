@@ -5,7 +5,7 @@ import geopandas as gpd
 from pathlib import Path
 
 
-from backend.app.services.iplan_fetcher import IplanFetcher
+from services.iplan_fetcher import IplanFetcher
 
 router = APIRouter()
 

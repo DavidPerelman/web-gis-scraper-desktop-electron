@@ -1,10 +1,39 @@
-node_modules/
+# 🐍 Python
 __pycache__/
-.env
-.venv
-temp_uploads
-frontend/release
-/frontend/release/
-/frontend/react/dist/
-/frontend/node_modules/
-/frontend/react/node_modules/
+*.py[cod]
+*.pyo
+*.spec
+
+# 🧪 PyInstaller
+backend/build/
+backend/dist/
+backend/*.spec
+
+# 📦 Virtualenv
+.venv/
+venv/
+env/
+
+# 📁 Editor & OS Files
+.vscode/
+*.log
+.DS_Store
+Thumbs.db
+
+# ⚙️ Electron & Node
+node_modules/
+frontend/**/node_modules/
+frontend/**/.vite/
+
+# 📁 React & Vite build
+frontend/**/dist/
+
+# 🚫 קבצי EXE בינאריים שלא עוקבים אחריהם
+frontend/electron/extra/run_server.exe
+*.exe
+
+# 🔐 Env files
+*.env
+.env.*
+
+frontend/electron/extra/run_server/*
