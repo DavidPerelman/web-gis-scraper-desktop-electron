@@ -1,8 +1,8 @@
 import os
 from pathlib import Path
 from fastapi import APIRouter, BackgroundTasks
-from backend.app.utils.gis_utils import build_gdf_from_plans
-from backend.app.services.export_service import (
+from utils.gis_utils import build_gdf_from_plans
+from services.export_service import (
     create_geojson_preview,
     create_shapefile_zip,
 )

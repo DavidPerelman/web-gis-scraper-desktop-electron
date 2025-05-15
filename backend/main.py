@@ -1,6 +1,8 @@
 from fastapi import FastAPI
-from backend.app.api import export_routes
-from backend.app.api.routes import router
+from fastapi.responses import JSONResponse
+import uvicorn
+from api import export_routes
+from api.routes import router
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -19,10 +21,18 @@ app.add_middleware(
 )
 
 
+@app.get("/")
+def main():
+    return JSONResponse(content={"status": "ok"})
+
+
 @app.get("/health")
-async def health_check():
-    return {"status": "ok"}
+def health_check():
+    return JSONResponse(content={"status": "ok"})
 
 
 app.include_router(router)
 app.include_router(export_routes.router)
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="127.0.0.1", port=8000)

@@ -5,7 +5,7 @@ import geopandas as gpd
 from shapely.geometry import Polygon
 from geojson import Feature, FeatureCollection
 
-from backend.app.services.mavat_scraper import (
+from services.mavat_scraper import (
     extract_main_fields_sync,
 )
 
