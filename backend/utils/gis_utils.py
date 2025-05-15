@@ -35,7 +35,7 @@ def build_gdf_from_plans(plans: list[dict]) -> gpd.GeoDataFrame:
             features.append(feature)
         except Exception as e:
             # log_warning(
-            #     f"⚠️ Failed to build polygon for {plan['attributes'].get('pl_number')}: {e}"
+            #     f"Failed to build polygon for {plan['attributes'].get('pl_number')}: {e}"
             # )
             continue
 
