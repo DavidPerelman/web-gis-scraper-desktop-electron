@@ -58,9 +58,9 @@ def extract_main_fields_sync(plan: dict) -> dict:
             more_button.click()
             time.sleep(1)  # זמן קצר לטעינה
         else:
-            log_info("ℹ️ 'More Data' button is not visible or not enabled – skipping click.")
+            log_info("'More Data' button is not visible or not enabled – skipping click.")
     except (TimeoutException, NoSuchElementException, ElementNotInteractableException):
-        log_warning("⚠️ 'More Data' button not found or not clickable.")
+        log_warning("'More Data' button not found or not clickable.")
 
     html = driver.page_source
 
@@ -96,7 +96,7 @@ def extract_main_fields_sync(plan: dict) -> dict:
             "div", {"class": "sv4-big"}
         ).get_text(strip=True)
     except Exception as e:
-        log_warning("⚠️ BeautifulSoup: Failed to extract total area in dunams:", e)
+        log_warning("BeautifulSoup: Failed to extract total area in dunams:", e)
 
     quant_data = []
 
@@ -121,7 +121,7 @@ def extract_main_fields_sync(plan: dict) -> dict:
         if key:
             plan["attributes"][key] = value
         else:
-            log_warning(f"⚠️ Unrecognized field label: {label}")
+            log_warning(f"Unrecognized field label: {label}")
 
     plan["attributes"]["quant_data"] = quant_data
 
