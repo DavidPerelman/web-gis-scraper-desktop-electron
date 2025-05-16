@@ -31,7 +31,7 @@ async def export_download(plans: list[dict], background_tasks: BackgroundTasks):
             os.remove(path)
             # נוכל למחוק גם את התיקייה אם רוצים: os.rmdir(path.parent)
         except Exception as e:
-            log_warning(f"⚠️ Failed to delete temp file: {e}")
+            log_warning(f"Failed to delete temp file: {e}")
 
     background_tasks.add_task(cleanup_file, zip_path)
 
