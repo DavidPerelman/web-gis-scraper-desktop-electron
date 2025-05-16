@@ -42,9 +42,7 @@
 | `backend/`           | שרת FastAPI כולל כל הלוגיקה וה־SHP    |
 | `frontend/react/`    | קוד React: העלאת קובץ, מפה, טבלה      |
 | `frontend/electron/` | קוד Electron: main.js, preload, אריזה |
-| `run_server.exe`     | שרת FastAPI ארוז עם כל התלויות        |
 | `docs/`              | תיעוד לפי פיצ'רים וגרסאות             |
-| `README.md`          | הקובץ הנוכחי                          |
 
 </div>
 
