@@ -114,6 +114,7 @@ const PolygonUploader = ({ onPlansReady, plansGeojson, setPlansGeojson }) => {
   const handleCancel = () => {
     abortRef.current?.abort();
     setFile(null);
+    setInputKey((prev) => prev + 1);
   };
 
   useEffect(() => {
