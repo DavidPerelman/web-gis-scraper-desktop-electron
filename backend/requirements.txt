@@ -18,3 +18,5 @@ geojson
 bs4
 pyproj
 uuid
+pdfplumber
+tabulate
