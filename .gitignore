@@ -40,3 +40,6 @@ frontend/electron/extra/run_server/*
 backend/temp_uploads
 frontend/electron/temp_uploads
 frontend/electron/extra
+
+*.pdf
+*.csv
