@@ -33,6 +33,8 @@ def run() -> dict:
         EC.presence_of_element_located((By.CSS_SELECTOR, "h1.plan-name"))
     )
 
+    documents_section_opened = False
+
     try:
         documents_button = WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable(
@@ -42,21 +44,37 @@ def run() -> dict:
                 )
             )
         )
-
         documents_button.click()
+        documents_section_opened = True
+        print("documents_button clicked")
+        time.sleep(2)
+    except Exception as e:
+        print("approved_documents_button failed:", e)
 
-        driver.execute_script(
-            "arguments[0].style.border='3px solid red'", documents_button
-        )
+    if documents_section_opened:
+        wait = WebDriverWait(driver, 10)
 
-        print("succeesfuly clickd!")
+        try:
+            approved_section = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located(
+                    (
+                        By.XPATH,
+                        "//div[contains(@class,'uk-accordion-title') and .//span[contains(normalize-space(.), 'מסמכים מאושרים')]]",
+                    )
+                )
+            )
 
-    except (TimeoutException, NoSuchElementException, ElementNotInteractableException):
-        print("'documents_button' button not found or not clickable.")
+            driver.execute_script("arguments[0].click();", approved_section)
+            print("נלחץ מקטע 'מסמכים מאושרים'")
+            print("approved_documents_button clicked")
+        except Exception as e:
+            print("approved_documents_button failed:", e)
+    else:
+        print("skipped clicking approved_documents_button because section didn't open")
 
     # time.sleep(2)
 
-    input("⬅️ לחץ Enter כדי לסגור את הדפדפן...")
+    input("לחץ Enter כדי לסגור את הדפדפן...")
     driver.quit()
 
 
