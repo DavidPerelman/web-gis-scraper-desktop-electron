@@ -42,3 +42,4 @@ frontend/electron/temp_uploads
 frontend/electron/extra
 
 *.pdf
+*.csv
