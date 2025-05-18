@@ -34,6 +34,8 @@ def run() -> dict:
     )
 
     documents_section_opened = False
+    approved_section_opened = False
+    instructions_section_opened = False
 
     try:
         documents_button = WebDriverWait(driver, 10).until(
@@ -65,10 +67,28 @@ def run() -> dict:
             )
 
             driver.execute_script("arguments[0].click();", approved_section)
+            approved_section_opened = True
             print("נלחץ מקטע 'מסמכים מאושרים'")
             print("approved_documents_button clicked")
         except Exception as e:
             print("approved_documents_button failed:", e)
+
+        if approved_section_opened:
+            try:
+                instructions_section = WebDriverWait(driver, 10).until(
+                    EC.presence_of_element_located(
+                        (
+                            By.XPATH,
+                            "//div[contains(@class,'uk-accordion-title') and .//span[normalize-space(.)='הוראות']]",
+                        )
+                    )
+                )
+
+                driver.execute_script("arguments[0].click();", instructions_section)
+                print("instructions_button clicked")
+                instructions_section_opened = True
+            except Exception as e:
+                print("instructions_button failed:", e)
     else:
         print("skipped clicking approved_documents_button because section didn't open")
 
