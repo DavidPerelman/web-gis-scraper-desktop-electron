@@ -1,23 +1,10 @@
-# 1. אתחול webdriver
-# 2. מעבר לכתובת pl_url (שים כתובת קבועה ידנית)
-# 3. המתנה לטעינה (h1.plan-name)
-# 4. שימוש ב־XPath כדי ללחוץ על "מסמכי התכנית"
-# 5. הדפסה – הצלחה או שגיאה
-
 import os
-import tempfile
 import time
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import (
-    TimeoutException,
-    NoSuchElementException,
-    ElementNotInteractableException,
-)
 
-# from utils.logger import log_info, log_warning
+from utils.selenium_utils import safe_click
 
 
 def wait_for_download(directory, timeout=10):
@@ -29,37 +16,12 @@ def wait_for_download(directory, timeout=10):
     return None
 
 
-def run() -> dict:
-    pdf_path = None
-    # url = "https://mavat.iplan.gov.il/SV4/1/1000351135/310"
-    url = "https://mavat.iplan.gov.il/SV4/1/1000262173/310"
-
-    download_dir = tempfile.mkdtemp()
-
-    prefs = {
-        "download.default_directory": download_dir,  # תיקיית הורדה
-        "download.prompt_for_download": False,
-        "plugins.always_open_pdf_externally": True,  # לא לפתוח PDF בדפדפן
-    }
-
-    chrome_options = webdriver.ChromeOptions()
-    # chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_experimental_option("prefs", prefs)
-
-    driver = webdriver.Chrome(options=chrome_options)
-    driver.get(url)
-
-    WebDriverWait(driver, 7).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, "h1.plan-name"))
-    )
+def download_plan_instructions_pdf(driver, download_dir: str) -> str:
 
     documents_section_opened = False
     approved_section_opened = False
     instructions_section_opened = False
     download_button_clicked = False
-    file_downloaded = False
 
     try:
         documents_button = WebDriverWait(driver, 10).until(
@@ -70,7 +32,9 @@ def run() -> dict:
                 )
             )
         )
-        documents_button.click()
+
+        safe_click(driver, documents_button)
+
         documents_section_opened = True
         print("documents_button clicked")
         time.sleep(2)
@@ -78,7 +42,7 @@ def run() -> dict:
         print("approved_documents_button failed:", e)
 
     if documents_section_opened:
-        wait = WebDriverWait(driver, 10)
+        WebDriverWait(driver, 10)
 
         try:
             approved_section = WebDriverWait(driver, 10).until(
@@ -90,9 +54,8 @@ def run() -> dict:
                 )
             )
 
-            driver.execute_script("arguments[0].click();", approved_section)
+            safe_click(driver, approved_section)
             approved_section_opened = True
-            print("נלחץ מקטע 'מסמכים מאושרים'")
             print("approved_documents_button clicked")
         except Exception as e:
             print("approved_documents_button failed:", e)
@@ -108,7 +71,7 @@ def run() -> dict:
                     )
                 )
 
-                driver.execute_script("arguments[0].click();", instructions_section)
+                safe_click(driver, instructions_section)
                 print("instructions_button clicked")
                 instructions_section_opened = True
             except Exception as e:
@@ -125,7 +88,7 @@ def run() -> dict:
                     )
                 )
 
-                driver.execute_script("arguments[0].click();", download_button)
+                safe_click(driver, download_button)
                 print("download_button clicked")
                 download_button_clicked = True
             except Exception as e:
@@ -133,26 +96,13 @@ def run() -> dict:
 
         if download_button_clicked:
             try:
-                pdf_path = wait_for_download(download_dir)
-
-                if pdf_path:
-                    print("file download:", pdf_path)
-                    file_downloaded = True
+                if download_dir:
+                    return wait_for_download(download_dir)
                 else:
                     print("download failed")
+                    return None
 
             except Exception as e:
                 print("download_button failed:", e)
     else:
         print("skipped clicking approved_documents_button because section didn't open")
-
-    # time.sleep(2)
-
-    input("לחץ Enter כדי לסגור את הדפדפן...")
-    driver.quit()
-
-    return pdf_path
-
-
-if __name__ == "__main__":
-    run()
