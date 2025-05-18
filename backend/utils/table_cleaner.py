@@ -2,6 +2,7 @@
 
 import re
 import pandas as pd
+import unicodedata
 
 
 def reverse_hebrew_words_only(text: str) -> str:
@@ -52,6 +53,45 @@ def protect_parens(cell):
 
 
 def clean_dataframe(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.applymap(clean_cell)
-    df = df.applymap(protect_parens)
+    df = df.apply(
+        lambda col: col.map(clean_cell if col.dtype == "object" else lambda x: x)
+    )
+    df = df.apply(
+        lambda col: col.map(protect_parens if col.dtype == "object" else lambda x: x)
+    )
     return df
+
+
+def normalize_label(label: str) -> str:
+    if not isinstance(label, str):
+        return label
+
+    # Unicode normalize
+    label = unicodedata.normalize("NFKC", label)
+
+    # החלפות נפוצות לגרשים וסימנים
+    label = (
+        label.replace("״", '"').replace("”", '"').replace("“", '"').replace("„", '"')
+    )
+    label = label.replace("׳", "'").replace("’", "'").replace("‘", "'")
+    label = label.replace("־", "-")  # מקף עברי
+    label = label.replace("–", "-")  # מקף ארוך
+    label = label.replace("—", "-")  # מקף אמריקאי
+
+    # הסרת תווי כיווניות
+    label = re.sub(r"[\u200e\u200f\u202a-\u202e]", "", label)
+
+    # איחוד רווחים
+    label = re.sub(r"\s+", " ", label)
+
+    return label.strip()
+
+
+def rename_pdf_table_columns(df: pd.DataFrame, label_map: dict) -> pd.DataFrame:
+    new_columns = {}
+    for col in df.columns:
+        norm_col = normalize_label(col)
+        new_columns[col] = label_map.get(
+            norm_col, norm_col
+        )  # אם לא נמצא – שמור כמו שהוא
+    return df.rename(columns=new_columns)

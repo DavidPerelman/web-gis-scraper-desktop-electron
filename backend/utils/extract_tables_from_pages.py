@@ -1,8 +1,8 @@
 import pandas as pd
 import pdfplumber
 
-from suppress_stderr import suppress_stderr
-from table_cleaner import clean_dataframe
+from utils.suppress_stderr_util import suppress_stderr
+from utils.table_cleaner import clean_dataframe
 
 
 def generate_column_names_from_three_rows(
@@ -89,10 +89,5 @@ def extract_tables_from_pages(pdf_path: str, pages: list) -> list[list[str]]:
                 headers = column_names
     df = pd.DataFrame(all_rows, columns=headers)
     df = clean_dataframe(df)
-
-    df[df.columns[::-1]].to_csv(
-        "טבלת_זכויות_101-0135004.csv", index=False, encoding="utf-8-sig"
-    )
-    print("✅ הטבלה נשמרה בהצלחה ל־CSV עם כיווניות RTL")
 
     return df

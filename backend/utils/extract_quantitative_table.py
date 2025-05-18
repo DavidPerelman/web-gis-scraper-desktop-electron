@@ -1,7 +1,6 @@
 import pdfplumber
 
-from suppress_stderr import suppress_stderr
-from extract_tables_from_pages import extract_tables_from_pages
+from utils.suppress_stderr_util import suppress_stderr
 
 
 def is_quantitative_table_start(page, header_keywords):
@@ -55,16 +54,3 @@ def extract_quantitative_table(pdf_path, header_keywords):
                         table_pages.append(page_num + 1)
                         break  # סוף הטבלה
         return table_pages
-
-
-if __name__ == "__main__":
-    pdf_path = r"C:\Users\dpere\Documents\python-projects\web-gis-scraper-desktop-electron\backend\101-0135004_תדפיס הוראות התכנית_חתום לאישור_1.pdf"
-
-    header_keywords = [
-        "םוקמ / ןיינב",
-        "שרגמ לדוג",
-        "הינב יחטש",
-        'ד"חי רפסמ',
-    ]
-    pages = extract_quantitative_table(pdf_path, header_keywords)
-    extract_tables_from_pages(pdf_path, pages)
