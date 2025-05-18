@@ -50,15 +50,19 @@ def extract_main_fields_sync(plan: dict) -> dict:
 
     try:
         wait = WebDriverWait(driver, 10)
-        more_button = wait.until(EC.presence_of_element_located(
-            (By.CSS_SELECTOR, "button[aria-label='נתונים נוספים']")
-        ))
+        more_button = wait.until(
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, "button[aria-label='נתונים נוספים']")
+            )
+        )
 
         if more_button.is_displayed() and more_button.is_enabled():
             more_button.click()
             time.sleep(1)  # זמן קצר לטעינה
         else:
-            log_info("'More Data' button is not visible or not enabled – skipping click.")
+            log_info(
+                "'More Data' button is not visible or not enabled – skipping click."
+            )
     except (TimeoutException, NoSuchElementException, ElementNotInteractableException):
         log_warning("'More Data' button not found or not clickable.")
 
@@ -126,6 +130,8 @@ def extract_main_fields_sync(plan: dict) -> dict:
     plan["attributes"]["quant_data"] = quant_data
 
     plan["attributes"].pop("quant_data", None)
+
+    # scraping_data_from_pdf()
 
     driver.quit()
 
