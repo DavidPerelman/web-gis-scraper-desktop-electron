@@ -1,8 +1,11 @@
 import { useState } from "react";
 import "./App.css";
+import "leaflet/dist/leaflet.css";
+import "leaflet-draw/dist/leaflet.draw.css";
 import PlansMap from "./components/PlansMap";
 import PlansTable from "./components/PlansTable";
 import PolygonUploader from "./components/PolygonUploader";
+import PolygonDrawer from "./components/PolygonDrawer";
 
 function App() {
   const [plansGeojson, setPlansGeojson] = useState(null);
@@ -33,6 +36,7 @@ function App() {
         setPlansGeojson={setPlansGeojson}
         onPlansReady={handlePlansReady}
       />
+      <PolygonDrawer />
       {plansGeojson && (
         <>
           <PlansMap
