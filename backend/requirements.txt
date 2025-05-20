@@ -19,4 +19,12 @@ bs4
 pyproj
 uuid
 pdfplumber
-tabulate
+pytesseract 
+pdf2image
+deskewed_page2
+rapidfuzz
+paddlepaddle==2.5.2
+paddleocr
+matplotlib
+requests
+paddleocr[structure]

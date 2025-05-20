@@ -161,8 +161,6 @@ def extract_main_fields_sync(plan: dict) -> dict:
             else:
                 df = extract_tables_from_pages(pdf_path, pages)
                 if df.columns.duplicated().any():
-                    dupes = df.columns[df.columns.duplicated()].unique()
-                    log_warning(f"⚠️ Duplicate columns found and removed: {dupes}")
                     df = df.loc[:, ~df.columns.duplicated()]
 
                 mapped_rows = []
