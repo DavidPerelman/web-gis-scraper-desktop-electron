@@ -43,3 +43,6 @@ frontend/electron/extra
 
 *.pdf
 *.csv
+*.jpg
+*.png
+*.txt
