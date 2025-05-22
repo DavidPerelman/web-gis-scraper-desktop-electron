@@ -24,6 +24,10 @@ from utils.logger import log_info, log_warning
 from utils.quantitative_field_map import hebrew_label_to_key
 
 
+def is_blocked_page(driver: webdriver.Chrome) -> bool:
+    return "לא ניתן לצפות בפרטי היישות" in driver.page_source
+
+
 def extract_main_fields_sync(plan: dict) -> dict:
     try:
         url = plan["attributes"].get("pl_url")
@@ -45,6 +49,15 @@ def extract_main_fields_sync(plan: dict) -> dict:
 
         driver = webdriver.Chrome(options=chrome_options)
         driver.get(url)
+
+        if is_blocked_page(driver):
+            log_warning(
+                f"🔒 תוכנית חסומה: {plan.get('attributes', {}).get('pl_number')}"
+            )
+            plan["attributes"]["blocked"] = True
+            plan["attributes"]["enrichment_failed"] = True
+
+            return plan  # בלי לנסות להמשיך לגרד
 
         WebDriverWait(driver, 7).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "h1.plan-name"))

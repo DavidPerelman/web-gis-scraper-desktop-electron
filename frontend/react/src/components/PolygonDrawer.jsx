@@ -4,29 +4,39 @@ import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
-import "leaflet-draw"; // חשוב לייבא!
+import "leaflet-draw"; // חובה!
 
-const PolygonDrawer = ({ onFetchPlans }) => {
+const PolygonDrawer = ({
+  status,
+  // handleExportDownload,
+  setPolygonGeoJSON,
+  polygonGeoJSON,
+  clearPolygon,
+}) => {
   const mapRef = useRef(null);
   const leafletMap = useRef(null);
   const drawnItems = useRef(null);
-  const [polygonGeoJSON, setPolygonGeoJSON] = useState(null);
+  const [mapReady, setMapReady] = useState(false); // ✅ חדש
 
+  useEffect(() => {
+    if (clearPolygon && drawnItems.current) {
+      drawnItems.current.clearLayers();
+    }
+  }, [clearPolygon]);
+
+  // 🧭 יצירת מפה – רץ פעם אחת בלבד
   useEffect(() => {
     if (!mapRef.current || leafletMap.current) return;
 
-    // יצירת מפה
     leafletMap.current = L.map(mapRef.current).setView([32, 35], 10);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "© OpenStreetMap contributors",
     }).addTo(leafletMap.current);
 
-    // שכבת ציור
     drawnItems.current = new L.FeatureGroup();
     leafletMap.current.addLayer(drawnItems.current);
 
-    // כפתורי ציור
     const drawControl = new L.Control.Draw({
       draw: {
         polygon: {
@@ -47,53 +57,52 @@ const PolygonDrawer = ({ onFetchPlans }) => {
 
     leafletMap.current.addControl(drawControl);
 
-    // אירוע יצירת פוליגון
     leafletMap.current.on(L.Draw.Event.CREATED, (event) => {
-      drawnItems.current.clearLayers(); // רק אחד
+      drawnItems.current.clearLayers();
       const layer = event.layer;
       drawnItems.current.addLayer(layer);
 
       const geojson = layer.toGeoJSON();
       setPolygonGeoJSON(geojson);
-      console.log("🎯 Polygon drawn:", geojson);
+      console.log("check");
+      console.log(status);
     });
-  }, []);
 
-  // שליחה לשרת
-  const handleFetchPlans = async () => {
-    if (!polygonGeoJSON) return;
+    setMapReady(true); // ✅ סימון מוכנות
+  }, [setPolygonGeoJSON]);
+
+  // 📦 רינדור polygonGeoJSON מבחוץ (למשל אחרי שגיאה)
+  useEffect(() => {
+    if (
+      !mapReady ||
+      !polygonGeoJSON ||
+      !polygonGeoJSON.geometry ||
+      !Array.isArray(polygonGeoJSON.geometry.coordinates)
+    ) {
+      return;
+    }
+
+    const layerGroup = drawnItems.current;
+    if (!layerGroup) {
+      console.warn("⚠️ drawnItems לא מאותחל עדיין");
+      return;
+    }
 
     try {
-      const response = await fetch("http://localhost:8000/plans/by-polygon", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(polygonGeoJSON),
-      });
-
-      if (!response.ok) throw new Error("שגיאה מהשרת");
-
-      const result = await response.json();
-      console.log("📦 תוכניות מהשרת:", result);
-      onFetchPlans(result); // העבר לקומפוננטת האב
+      layerGroup.clearLayers();
+      const geoJsonLayer = L.geoJSON(polygonGeoJSON);
+      const layers = geoJsonLayer.getLayers();
+      if (layers.length > 0) {
+        layerGroup.addLayer(layers[0]);
+      }
     } catch (err) {
-      console.error("❌ שגיאה:", err);
-      alert("שגיאה בשליחה לשרת");
+      console.error("❌ שגיאה בהצגת polygonGeoJSON:", err);
     }
-  };
+  }, [polygonGeoJSON, mapReady]);
 
   return (
     <div className="space-y-4">
       <div ref={mapRef} style={{ height: "500px", width: "100%" }} />
-      {polygonGeoJSON && (
-        <button
-          onClick={handleFetchPlans}
-          className="px-4 py-2 bg-blue-600 text-white rounded cursor-pointer"
-        >
-          שלוף תוכניות
-        </button>
-      )}
     </div>
   );
 };
