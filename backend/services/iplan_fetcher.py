@@ -116,7 +116,7 @@ class IplanFetcher:
 
         filtered = self.filter_plans_in_polygon(raw)
 
-        filtered_subset = filtered[:1]
+        filtered_subset = filtered[:5]
 
         enriched = []
 
