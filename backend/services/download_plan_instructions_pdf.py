@@ -17,11 +17,11 @@ def wait_for_download(directory, timeout=10):
 
 
 def download_plan_instructions_pdf(driver, download_dir: str) -> str:
-
     documents_section_opened = False
     approved_section_opened = False
     instructions_section_opened = False
     download_button_clicked = False
+    approved_section = None
 
     try:
         documents_button = WebDriverWait(driver, 10).until(
@@ -60,7 +60,24 @@ def download_plan_instructions_pdf(driver, download_dir: str) -> str:
         except Exception as e:
             print("approved_documents_button failed:", e)
 
-        if approved_section_opened:
+        try:
+            approved_section = WebDriverWait(driver, 5).until(
+                EC.presence_of_element_located(
+                    (
+                        By.XPATH,
+                        "//div[contains(@class,'uk-accordion-title') and .//span[contains(normalize-space(.), 'מסמכים בתהליך')]]",
+                    )
+                )
+            )
+
+            safe_click(driver, approved_section)
+            approved_section_opened = True
+            print("approved_documents_button clicked")
+        except Exception as e:
+            print("approved_documents_button failed:", e)
+            approved_section = None
+
+        if approved_section_opened or approved_section is None:
             try:
                 instructions_section = WebDriverWait(driver, 10).until(
                     EC.presence_of_element_located(

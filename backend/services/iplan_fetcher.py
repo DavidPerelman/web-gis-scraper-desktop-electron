@@ -5,8 +5,14 @@ import geopandas as gpd
 from shapely.geometry import Polygon
 from geojson import Feature, FeatureCollection
 
+from utils.logger import log_warning
 from services.mavat_scraper import (
     extract_main_fields_sync,
+)
+
+
+from selenium.common.exceptions import (
+    TimeoutException,
 )
 
 
@@ -50,19 +56,31 @@ class IplanFetcher:
         response_body = buffer.getvalue().decode("utf-8")
         return json.loads(response_body)
 
-    def filter_plans_in_polygon(self, raw_json: dict) -> list[dict]:
-        features = raw_json.get("features", [])
+    def filter_plans_in_polygon(self, features: list[dict]) -> list[dict]:
         filtered = []
 
-        for plan in features:
-            geom_data = plan.get("geometry", {})
-            rings = geom_data.get("rings")
+        for plan in features["features"]:
+            rings = plan.get("geometry", {}).get("rings")
             if not rings:
                 continue
             polygon = Polygon(shell=rings[0], holes=rings[1:])
-            if self.polygon.unary_union.contains(polygon.centroid):
+            if self.polygon.unary_union.intersects(polygon):
                 filtered.append(plan)
         return filtered
+
+    # def filter_plans_in_polygon(self, raw_json: dict) -> list[dict]:
+    #     features = raw_json.get("features", [])
+    #     filtered = []
+
+    #     for plan in features:
+    #         geom_data = plan.get("geometry", {})
+    #         rings = geom_data.get("rings")
+    #         if not rings:
+    #             continue
+    #         polygon = Polygon(shell=rings[0], holes=rings[1:])
+    #         if self.polygon.unary_union.contains(polygon.centroid):
+    #             filtered.append(plan)
+    #     return filtered
 
     def extract_mavat_data(self, plan: dict) -> dict:
         return extract_main_fields_sync(plan)
@@ -95,16 +113,32 @@ class IplanFetcher:
 
     async def run(self) -> list[dict]:
         raw = await self.fetch_plans_by_bbox()
+
         filtered = self.filter_plans_in_polygon(raw)
 
-        filtered_subset = filtered[:5]
+        filtered_subset = filtered[:1]
 
         enriched = []
 
-        for plan in filtered_subset:
-            plan = self.extract_mavat_data(plan)
-            enriched.append(plan)
+        # for plan in filtered_subset:
+        #     plan = self.extract_mavat_data(plan)
+        #     enriched.append(plan)
 
-        gdf = self.build_geodataframe_feature_collection(enriched)
+        for plan in filtered_subset:
+            try:
+                enriched_plan = self.extract_mavat_data(plan)
+                enriched.append(enriched_plan)
+            except TimeoutException as e:
+                plan["attributes"]["blocked"] = True
+                log_warning(
+                    f"🔒 תוכנית חסומה (Timeout): {plan['attributes'].get('pl_number')} – {str(e)}"
+                )
+                enriched.append(plan)
+            except Exception as e:
+                plan["attributes"]["enrichment_failed"] = True
+                log_warning(
+                    f"❌ שגיאה בהעשרת תוכנית: {plan['attributes'].get('pl_number')} – {str(e)}"
+                )
+                enriched.append(plan)
 
         return enriched

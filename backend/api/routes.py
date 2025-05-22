@@ -1,8 +1,10 @@
 import zipfile
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Request
+
 import shutil
 import geopandas as gpd
 from pathlib import Path
+from shapely.geometry import shape
 
 
 from services.iplan_fetcher import IplanFetcher
@@ -52,6 +54,20 @@ async def upload_polygon(file: UploadFile = File(...)):
 
     # העשרת תכניות
     fetcher = IplanFetcher(gdf)
+    plans = await fetcher.run()
+
+    return plans
+
+
+@router.post("/plans/by-polygon")
+async def get_plans_by_polygon(request: Request):
+    geojson_feature = await request.json()
+
+    polygon_gdf = gpd.GeoDataFrame.from_features(
+        [geojson_feature], crs="EPSG:4326"
+    ).to_crs("EPSG:2039")
+
+    fetcher = IplanFetcher(polygon_gdf)
     plans = await fetcher.run()
 
     return plans

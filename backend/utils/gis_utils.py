@@ -1,7 +1,7 @@
 import geopandas as gpd
 from shapely.geometry import Polygon
 from geojson import Feature, FeatureCollection
-
+import pandas as pd
 
 field_renames = {
     "residential_units": "res_units",
@@ -26,22 +26,26 @@ def build_gdf_from_plans(plans: list[dict]) -> gpd.GeoDataFrame:
         rings = plan.get("geometry", {}).get("rings", [])
         if not rings:
             continue
-        exterior = rings[0]
-        holes = rings[1:]
 
         try:
-            polygon = Polygon(shell=exterior, holes=holes)
+            polygon = Polygon(shell=rings[0], holes=rings[1:])
             feature = Feature(geometry=polygon, properties=plan["attributes"])
             features.append(feature)
         except Exception as e:
-            # log_warning(
-            #     f"Failed to build polygon for {plan['attributes'].get('pl_number')}: {e}"
-            # )
+            print(f"⚠️ Failed to convert polygon: {e}")
             continue
 
     collection = FeatureCollection(features)
 
-    gdf = gpd.GeoDataFrame.from_features(collection, crs="EPSG:2039")
+    # צור טבלה רגילה ואז המר ל-GeoDataFrame עם עמודת geometry מוגדרת
+    geometries = [
+        Polygon(f["geometry"]["coordinates"][0]) for f in collection["features"]
+    ]
+    properties = [f["properties"] for f in collection["features"]]
+
+    df = pd.DataFrame(properties)
+    df["geometry"] = geometries
+    gdf = gpd.GeoDataFrame(df, geometry="geometry", crs="EPSG:2039")
     gdf.rename(columns=field_renames, inplace=True)
 
     return gdf
